@@ -8,13 +8,19 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-community/art": "^1.2.0",
+    "calendar": "^0.1.1",
     "expo": "^39.0.3",
     "expo-barcode-scanner": "~9.0.0",
+    "expo-battery": "~3.0.0",
+    "expo-calendar": "~8.5.0",
     "expo-camera": "~9.0.0",
+    "expo-cli": "^3.28.1",
     "expo-status-bar": "~1.0.2",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.3.tar.gz",
+    "react-native-progress": "^4.1.2",
     "react-native-web": "~0.13.12"
   },
   "devDependencies": {

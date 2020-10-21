@@ -1,118 +1,79 @@
-import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import './assets/red_x.png';
-import './assets/green_check.png';
+import * as React from 'react';
+import * as Battery from 'expo-battery';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import * as Progress from 'react-native-progress';
 
-export default function App() {
-
-  // setup all of the states using hooks
-  const [hasPermission, setHasPermission] = useState(null);
-  const [itemNum, setItemNum] = useState("")
-  const [stock, setStock] = useState(null)
-  const [scanned, setScanned] = useState(false);
-
-  // Make sure the app has permissions to use the camera
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
-
-  // Set all of the states when a barcode gets scanned
-  const handleBarCodeScanned = ({ data }) => {
-    setScanned(true);
-    setItemNum(data)
-    setStock(Math.floor(Math.random() * 5))
+export default class App extends React.Component {
+  state = {
+    batteryLevel: null,
   };
 
-  // Failsafe for users without permissions to camera
-  if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+  componentDidMount() {  
+    this._subscribe();
   }
 
+  componentWillUnmount() {
+    this._unsubscribe();
+  }
 
-  return (
-    <View
-      style={styles.container}>
+  async _subscribe() {
+    const batteryLevel = Math.round(await Battery.getBatteryLevelAsync() * 100)
 
-        {/* Camera box on the top half of the screen */}
-        <View
-        style={styles.cameraBox}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={StyleSheet.absoluteFillObject} />
+    if(await Battery.isAvailableAsync()){
+      this.setState({ batteryLevel });
+    } else {
+      this.setState({batteryLevel: Math.round(Math.random() * 100)})
+    }
+      this._subscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
 
-        {scanned && 
-          <TouchableOpacity 
-            title={'Tap to Scan Again'} 
-            onPress={() => setScanned(false)} 
-            style={styles.scanAgainButton}>
-              <Text style={styles.scanAgainText}>Tap to Scan Again</Text>
-          </TouchableOpacity>
-        }
+      this.setState({batteryLevel})
+      console.log('batteryLevel changed!', batteryLevel);
+    });
+  }
+
+  _unsubscribe() {
+    this._subscription && this._subscription.remove();
+    this._subscription = null;
+  }
+
+  async refresh() {
+    const batteryLevel = Math.round(await Battery.getBatteryLevelAsync() * 100);
+
+    if(await Battery.isAvailableAsync()){
+      this.setState({ batteryLevel });
+    } else {
+      this.setState({batteryLevel: Math.round(Math.random() * 100)})
+    }
+
+    console.log("Battery percentage has been refreshed!")
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>Current Battery Level:</Text>
+        <Text style={styles.text}>{this.state.batteryLevel}</Text>
+        <Button title="Refresh battery percentage" onPress={() => this._subscribe()} color="green"/>
+        <Progress.Bar style={styles.progressors} progress={this.state.batteryLevel/100} width={300} animationConfig={{bounciness: 25}} color="white" unfilledColor="green"/>
       </View>
-
-      {/* Description box containing the item number and randomly generated stock number */}
-      <View
-        style={styles.descriptionBox}>
-          <Image 
-            source={require('./assets/Steelcase.png')}
-            style={styles.steelcaseLogo}
-          />
-            <Text
-              style={styles.description}>
-              Item Number: {itemNum}
-            </Text>
-            <Text
-              style={styles.description}>
-                Stock: {stock}
-            </Text>
-            {/* Ternary operator for setting the image at the bottom. If inventory is 0, set it as red x, otherwise it shouold be the green check */}
-            {stock === 0 ? <Image style={styles.stockImage} source={require('./assets/red_x.png')}/> : <Image style={styles.stockImage} source={require('./assets/green_check.png')}/>}
-      </View>
-    </View>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: "flex-start"
+    backgroundColor: '#000000',
+    alignItems: "center",
+    justifyContent: "center"
   },
-  stockImage: {
-    flex: .7,
-    width: null,
-    height: null, 
-    resizeMode: 'contain',
-    margin: 20
+  text: {
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    margin: 3
   },
-  scanAgainButton: {
-    marginBottom: 20,
-    alignSelf: "center",
-  },
-  scanAgainText: {
-    color: 'white',
-    fontSize: 22
-  },
-  steelcaseLogo: {
-    width: 160, 
-    resizeMode: "contain"
-  },
-  description: {
-    fontSize: 22,
-    margin: 12
-  },
-  cameraBox: {
-    flex: .6,
-    justifyContent: "flex-end"
-  },
-  descriptionBox: {
-    flex:.4
+  progressors: {
+    margin: 20,
+    color: "green"
   }
 });

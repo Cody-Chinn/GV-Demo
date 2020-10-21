@@ -21,6 +21,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "A short demo of the mobile tech being used at Steelcase to develop apps internally",
+    "githubUrl": "https://github.com/Cody-Chinn/GV-Demo"
   }
 }
