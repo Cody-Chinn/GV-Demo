@@ -36,18 +36,6 @@ export default class App extends React.Component {
     this._subscription = null;
   }
 
-  async refresh() {
-    const batteryLevel = Math.round(await Battery.getBatteryLevelAsync() * 100);
-
-    if(await Battery.isAvailableAsync()){
-      this.setState({ batteryLevel });
-    } else {
-      this.setState({batteryLevel: Math.round(Math.random() * 100)})
-    }
-
-    console.log("Battery percentage has been refreshed!")
-  }
-
   render() {
     return (
       <View style={styles.container}>
